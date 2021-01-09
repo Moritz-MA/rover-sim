@@ -34,7 +34,7 @@ const updateMetrics = (location: LatLonSpherical, heading: number, clock: number
 }
 
 const updateSpeedMetrics = (currentSpeed: number) => {
-  if (priorMetrics.speeds.length >= 10) {
+  if (priorMetrics.speeds.length > 10) {
     priorMetrics.speeds.shift()
   }
   priorMetrics.speeds.push(currentSpeed)
