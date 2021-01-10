@@ -128,14 +128,14 @@ export class Graph {
         const axisEvery = 5;
 
         const amount = Math.floor(Math.abs(this.yMax - this.yMin) / axisEvery)
-        const axises = Array.from(Array(amount).keys()).map((_, i) => {
+        const axes = Array.from(Array(amount).keys()).map((_, i) => {
             return (this.yMin - this.yMin % axisEvery) + (i * axisEvery);
         })
 
         this.context.lineWidth = 1;
         this.context.strokeStyle = '#444';
 
-        axises.forEach(y => {
+        axes.forEach(y => {
             const mappedAxis = this.mapYValueToCanvas(y);
 
             this.context.beginPath();
