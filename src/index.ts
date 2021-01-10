@@ -6,10 +6,15 @@ import { getEngineValues } from './util/getEngineValues'
 import { getHarmonicMean } from './util/getHarmonicMean'
 
 const LOIs: LocationOfInterest[] = [
+  // {
+  //   latitude: 52.48970703639255,
+  //   longitude: 13.395281227289209,
+  //   label: 'A 1407m'
+  // }
   {
     latitude: 52.47880703639255,
     longitude: 13.395281227289209,
-    label: 'A'
+    label: 'A 195m'
   }
 ]
 
@@ -44,6 +49,8 @@ const loop: ControlLoop = ({location, heading, clock}, {engines}) => {
 
   const currentLocation = new LatLon(location.latitude, location.longitude)
   const loiLocation = new LatLon(LOIs[0].latitude, LOIs[0].longitude)
+
+  console.log('bearing: ', currentLocation.initialBearingTo(loiLocation))
 
   const distanceToLoi = currentLocation.distanceTo(loiLocation)
 
