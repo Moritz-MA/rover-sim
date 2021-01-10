@@ -3,16 +3,25 @@ import LatLon from 'geodesy/latlon-spherical'
 import LatLonSpherical from "geodesy/latlon-spherical";
 import {SensorValues} from "rover";
 import {Buffer} from './Buffer';
-import {harmonicMean, clamp} from './utils';
+import {harmonicMean, clamp, signedAngleDifference, getEngineForceToTravelDistance, turnVehicle} from './utils';
 import {Graph} from './Graph';
+import LatLong from "geodesy/latlon-spherical";
 
-// const velocityCanvas = document.getElementById('velocityCanvas') as HTMLCanvasElement
-// const velocityContext = velocityCanvas.getContext('2d')
-//
-// velocityCanvas.width = 800;
-// velocityCanvas.height = 100;
 
-let simulation: Simulation | null = null;
+const destinations = [
+  {
+    latitude: 52.47880703639255,
+    longitude: 13.395281227289209,
+    label: "A",
+  },
+  {
+    latitude: 52.47880703639255,
+    longitude: 13.395681227289209,
+    label: "B",
+  },
+];
+
+let simulation: Simulation | null;
 
 const controlValues = {
   forward: 0,
@@ -20,14 +29,6 @@ const controlValues = {
   left: 0,
   right: 0,
 };
-
-const POINT_A = {
-  latitude: 52.47880703639255,
-  longitude: 13.395281227289209,
-  label: 'A'
-}
-
-const positionPointA = new LatLon(POINT_A.latitude, POINT_A.longitude)
 
 let iteration = 0;
 const sensorDataBuffer = new Buffer<SensorValues>(5);
@@ -94,29 +95,38 @@ const velocityGraph = new Graph(
   }
 );
 
+let currentDestinationIndex = 0;
+
 const loop: ControlLoop = (sensorData, {engines}) => {
   sensorDataBuffer.push(sensorData);
   const {location: {latitude, longitude}, heading, clock} = sensorData
-
-  let positionDelta = null;
   const timeDelta = clock - lastClock
+
+  engines = [0, 0]
+
+  const currentDestination = destinations[currentDestinationIndex];
+  const destinationPosition = new LatLong(currentDestination.latitude, currentDestination.longitude);
   const position = new LatLon(latitude, longitude)
+  const distanceToDestination = position.distanceTo(destinationPosition);
 
-  if (sensorDataBuffer.item(1)) {
-    const prev = sensorDataBuffer.item(1);
-    positionDelta = position.distanceTo(new LatLon(prev.location.latitude, prev.location.longitude))
+  const desiredOrientation = 360 - position.initialBearingTo(destinationPosition);
+  const desiredOrientationDelta = signedAngleDifference(heading, desiredOrientation);
+
+  if (Math.round(distanceToDestination) > 0) {
+    engines = engines.map(() => getEngineForceToTravelDistance(distanceToDestination, nVelocity));
   }
 
-  engines = [1, 1]
-
-  const distanceToA = position.distanceTo(positionPointA);
-
-  if (distanceToA < 18) {
-    engines = [-1, -1]
+  if (Math.round(desiredOrientationDelta) !== 0) {
+    engines = turnVehicle(desiredOrientationDelta)
   }
 
-  if (distanceToA < 70 && nVelocity < 3) {
-    engines = [0, 0]
+  if (Math.round(nVelocity) === 0 && Math.floor(distanceToDestination) === 0) {
+    if (currentDestinationIndex < destinations.length - 1) {
+      currentDestinationIndex++;
+      console.log("Reached Destination");
+    } else {
+      console.log("Done with all stops");
+    }
   }
 
   // If any steering overrides are happening
@@ -147,12 +157,16 @@ const loop: ControlLoop = (sensorData, {engines}) => {
   return {
     engines,
     debug: {
+      desiredOrientationDelta: desiredOrientationDelta + " deg",
+      desiredOrientation: desiredOrientation + " deg",
+      orientation: heading + " deg",
       nVelocity: nVelocity + ' m/s',
       nAcceleration: nAcceleration * 100 + ' cm/s^2',
-      distanceToA: distanceToA + 'm',
+      distanceToDestination: distanceToDestination + 'm',
       controlValues: JSON.stringify(controlValues),
       engines: JSON.stringify(engines),
       timeDelta: timeDelta + '',
+      destination: destinations[currentDestinationIndex].label,
     }
   }
 }
@@ -163,7 +177,7 @@ simulation = new Simulation({
     longitude:13.395281227289209
   },
   element: document.querySelector('main') as HTMLElement,
-  locationsOfInterest: [POINT_A],
+  locationsOfInterest: destinations,
   renderingOptions: {
     width: 800,
     height: 800,
