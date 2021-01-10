@@ -87,6 +87,10 @@ const velocityGraph = new Graph(
       color: '#f0f',
       range: [0, 30],
     },
+    timeDelta: {
+      color: '#0ff',
+      range: [10, 30],
+    }
   }
 );
 
@@ -138,7 +142,7 @@ const loop: ControlLoop = (sensorData, {engines}) => {
   lastPosition = position;
   iteration++;
 
-  velocityGraph.next({velocity: velocityBuffer.latest(), nVelocity})
+  velocityGraph.next({velocity: velocityBuffer.latest(), nVelocity, timeDelta})
 
   return {
     engines,

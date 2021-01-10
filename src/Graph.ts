@@ -89,12 +89,12 @@ export class Graph {
     }
 
     private drawLabels() {
-        const margin = 10;
+        const margin = 5;
         let start = 5;
 
         Object.values(this.entries).forEach(entry => {
             const label = this.drawEntryLabel(entry, {x: start, y: 5});
-            start = label.width + margin;
+            start = start + label.width + margin;
         })
     }
 
