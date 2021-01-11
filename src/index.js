@@ -1,8 +1,28 @@
 import { Simulation } from 'rover';
 
-const loop = ({ location, heading, clock }, { engines }) => ({
-  engines: [0.5, 0.8],
-});
+const locationsOfInterest = [
+  {
+    latitude: 52.47880703639255,
+    longitude: 13.395281227289209,
+    label: 'A',
+  },
+  {
+    latitude: 52.47870703639255,
+    longitude: 13.395281227289209,
+    label: 'B',
+  },
+];
+
+const loop = ({ location, heading, clock }, { engines }) => {
+  if (clock < 3000) {
+    return {
+      engines: [0.0, 0.0],
+    };
+  }
+  return {
+    engines: [1.0, 1.0],
+  };
+};
 
 const simulation = new Simulation({
   loop,
@@ -11,13 +31,7 @@ const simulation = new Simulation({
     longitude: 13.395281227289209,
   },
   element: document.querySelector('main'),
-  locationsOfInterest: [
-    {
-      latitude: 52.47880703639255,
-      longitude: 13.395281227289209,
-      label: 'A',
-    },
-  ],
+  locationsOfInterest,
   renderingOptions: {
     width: 800,
     height: 800,
