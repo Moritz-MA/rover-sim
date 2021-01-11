@@ -1,4 +1,4 @@
-import { ControlLoop, Simulation } from 'rover'
+import { ControlLoop, Simulation, AUTHENTICITY_LEVEL1 } from 'rover'
 
 const loop: ControlLoop = ({location, heading, clock}, {engines}) => {
 
@@ -22,7 +22,8 @@ const simulation = new Simulation({
   renderingOptions: {
     width: 800,
     height: 800,
-  }
+  },
+  physicalConstraints: AUTHENTICITY_LEVEL1
 });
 
 
