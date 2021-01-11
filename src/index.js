@@ -2,6 +2,11 @@ import { Simulation } from 'rover';
 
 const locationsOfInterest = [
   {
+    latitude: 52.477050353132384,
+    longitude: 13.395281227289209,
+    label: 'Origin',
+  },
+  {
     latitude: 52.47880703639255,
     longitude: 13.395281227289209,
     label: 'A',
@@ -12,6 +17,13 @@ const locationsOfInterest = [
     label: 'B',
   },
 ];
+
+const calcRouteHeading = targetLocation => {
+  const a = locationsOfInterest[0].latitude - targetLocation.latitude;
+  const b = locationsOfInterest[0].longitude - targetLocation.longitude;
+  let c;
+  let heading;
+};
 
 const loop = ({ location, heading, clock }, { engines }) => {
   if (clock < 3000) {
@@ -26,10 +38,7 @@ const loop = ({ location, heading, clock }, { engines }) => {
 
 const simulation = new Simulation({
   loop,
-  origin: {
-    latitude: 52.477050353132384,
-    longitude: 13.395281227289209,
-  },
+  origin: locationsOfInterest[0],
   element: document.querySelector('main'),
   locationsOfInterest,
   renderingOptions: {
