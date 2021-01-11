@@ -12,8 +12,8 @@ const locationsOfInterest = [
     label: 'A',
   },
   {
-    latitude: 52.47870703639255,
-    longitude: 13.395281227289209,
+    latitude: 52.477160453132384,
+    longitude: 13.395492227289209,
     label: 'B',
   },
 ];
@@ -21,16 +21,26 @@ const locationsOfInterest = [
 const calcRouteHeading = targetLocation => {
   const a = locationsOfInterest[0].latitude - targetLocation.latitude;
   const b = locationsOfInterest[0].longitude - targetLocation.longitude;
-  let c;
-  let heading;
+
+  let heading = (Math.atan2(a, b) * 180) / Math.PI;
+  if (heading < 0) {
+    heading *= -1;
+  }
+
+  console.log(Math.round(heading));
+  return heading;
 };
 
 const loop = ({ location, heading, clock }, { engines }) => {
-  if (clock < 3000) {
+  const targetHeading = calcRouteHeading(locationsOfInterest[2]);
+  console.log(Math.round(heading));
+
+  if (Math.round(heading) !== Math.round(targetHeading)) {
     return {
-      engines: [0.0, 0.0],
+      engines: [0.3, -0.3],
     };
   }
+
   return {
     engines: [1.0, 1.0],
   };
