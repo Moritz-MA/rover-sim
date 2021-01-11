@@ -4,6 +4,11 @@ const loop = ({ location, heading, clock }, { engines }) => ({
   engines: [0.5, 0],
 });
 
+//erst Punkt A anvisieren
+//dann Rover drehen mit engine [0.6 , 0]
+//dann engine [1 , 1] bis >= 20cm bis A, dann [0.3 , 0.3]
+
+
 const simulation = new Simulation({
   loop,
   origin: {
