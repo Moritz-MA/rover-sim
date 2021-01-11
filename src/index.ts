@@ -109,8 +109,6 @@ const loop: ControlLoop = (sensorData, {engines}) => {
 
   engines = [0, 0]
 
-  console.log('bearing: ', currentLocation.initialBearingTo(loiLocation))
-
   const currentDestination = destinations[currentDestinationIndex];
   const destinationPosition = new LatLong(currentDestination.latitude, currentDestination.longitude);
   const position = new LatLon(latitude, longitude)
