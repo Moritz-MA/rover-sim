@@ -1,23 +1,23 @@
-import { ControlLoop, Simulation } from 'rover'
+import { ControlLoop, Simulation, AUTHENTICITY_LEVEL1 } from 'rover'
 
-const loop: ControlLoop = ({location, heading, clock}, {engines}) => {
-  if(Math.round(heading) <= 90){
-    console.log(Math.round(heading));
-    
-    return {
-      engines: [0.6,-0.6]
-    }
-  } else if(clock < 40000){
-    console.log(Math.round(heading));
-    
-    return {
-      engines: [1.0,1.0]
-    }
-  } else if(clock < 45000){
-    return {
-      engines: [-1.0,-1.0]
-    }
-  } else {
+  const loop: ControlLoop = ({location, heading, clock}, {engines}) => {
+    if(Math.round(heading) <= 90){
+      console.log(Math.round(heading));
+      
+      return {
+        engines: [0.6,-0.6]
+      }
+    } else if(clock < 40000){
+      console.log(Math.round(heading));
+      
+      return {
+        engines: [1.0,1.0]
+      }
+    } else if(clock < 45000){
+      return {
+        engines: [-1.0,-1.0]
+      }
+    } else {
     return {
       engines: [0,0]
     }
@@ -38,7 +38,8 @@ const simulation = new Simulation({
   renderingOptions: {
     width: 800,
     height: 800,
-  }
+  },
+  physicalConstraints: AUTHENTICITY_LEVEL1
 });
 
 
