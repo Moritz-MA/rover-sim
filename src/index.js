@@ -1,7 +1,7 @@
 import { Simulation } from 'rover';
 
 const loop = ({ location, heading, clock }, { engines }) => ({
-  engines: [0.5, 0.8],
+  engines: [0.5, 0],
 });
 
 const simulation = new Simulation({
