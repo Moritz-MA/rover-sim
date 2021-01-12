@@ -19,8 +19,8 @@ const locationsOfInterest = [
 ];
 
 const calcRouteHeading = targetLocation => {
-  const a = locationsOfInterest[0].latitude - targetLocation.latitude;
-  const b = locationsOfInterest[0].longitude - targetLocation.longitude;
+  const a = targetLocation.latitude - locationsOfInterest[0].latitude;
+  const b = targetLocation.longitude - locationsOfInterest[0].longitude;
 
   let heading = (Math.atan2(a, b) * 180) / Math.PI;
   if (heading < 0) {
