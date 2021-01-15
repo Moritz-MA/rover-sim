@@ -52,19 +52,13 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     if (heading > arctan - 0.8 && heading < arctan + 0.8) {
       if (distance_c > 0 && distance_c > 60) {
         run_forrest = [1, 1]
-        // short to point a
+        // short to point
       }
       if (distance_c < 20) {
         run_forrest = [0.55, 0.55]
       }
+      // if arrived at point
       if (distance_c < 0.3) {
-        if (heading < 360) {
-          run_forrest = [0.5, -0.6]
-        } else if (heading > 360) {
-          run_forrest = [-0.6, 0.5]
-        }
-      }
-      if (distance < 0.3 && heading == 360) {
         run_forrest = [0, 0]
         checkpoint += 1;
       }
@@ -72,31 +66,20 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
   } else {
     run_forrest = [0, 0]
   }
-  if (heading < arctan - 0.5 && heading > arctan + 0.5) {
-    if (distance_c > 0) {
-      // short to point a
-      if (distance < 20) {
-        run_forrest = [0.51, 0.51]
-      }
-      if (distance < 0.3) {
-        run_forrest = [0, 0]
-      }
-    } else {
-      run_forrest = [-0.55, -0.55]
-    }
-  }
   console.log(checkpoint)
+  // point arrived switch to next
   if (checkpoint == 1) {
     startpoint_lat = 1.000060
     startpoint_lon = 1.000010
     target_lat = 1.000090
     target_lon = 1.000070
-  } else if (checkpoint == 2) {
-    startpoint_lat = 1.000090
-    startpoint_lon = 1.000070
-    target_lat = 1
-    target_lon = 1
   }
+  // else if (checkpoint == 2) {
+  //   startpoint_lat = 1.000090
+  //   startpoint_lon = 1.000070
+  //   target_lat = 1
+  //   target_lon = 1
+  // }
 
   return {
     engines: run_forrest
