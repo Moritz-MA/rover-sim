@@ -6,11 +6,11 @@ let target_lat: number, target_lon: number, startpoint_lat: number, startpoint_l
 
 const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
 
-  let a = ((target_lat - startpoint_lat) * 100000);
-  let b = ((target_lon - startpoint_lon) * 100000);
-  let c = (Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2)))
-  let ankathete;
-  let gegenkat;
+  let ankathete, gegenkat, arctan, a, b, c;
+  a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
+  b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
+  c = (Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))) // länge strecke c
+  // katheten definieren
   if (a > b) {
     ankathete = a;
     gegenkat = b;
@@ -18,68 +18,73 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     ankathete = b;
     gegenkat = a;
   }
-
-
   // calc tan of tangens
-  let arctan = (Math.atan2(gegenkat, ankathete) * 180 / Math.PI);
+  arctan = (Math.atan2(gegenkat, ankathete) * 180 / Math.PI);
+  if (checkpoint > 0) {
+    if(a > b) {
+      arctan = 360 - arctan;
+    } else {
+    // calculate tan in rechtwinkligem Dreieck
+    arctan = 360 - (90 - arctan);
+    }
+  }
 
-  if (arctan >= 0) {
+  // if running first time
+  if (arctan >= 0 && checkpoint == 0) {
     arctan -= 360;
     arctan *= -1;
-  } else {
+  } else if (arctan < 0 && checkpoint == 0) {
     arctan += 360;
   }
-  if (checkpoint == 1) {
-    arctan = 316
-  }
 
-  heading = heading
-  let run_forrest;
-  let distance_lat = ((target_lat - location.latitude) * 100000);
-  let distance_lon = ((target_lon - location.longitude) * 100000);
-  let distance_c = (Math.sqrt(Math.pow(distance_lat, 2) + Math.pow(distance_lon, 2)))
-  let distance = c;
 
-  console.log('distance:', distance, 'verbleibend:', distance_c, heading, arctan)
+  let run_forrest, distance_c, distance, distance_lat, distance_lon;
+  distance_lat = ((target_lat - location.latitude) * 100000);
+  distance_lon = ((target_lon - location.longitude) * 100000);
+  distance_c = (Math.sqrt(Math.pow(distance_lat, 2) + Math.pow(distance_lon, 2)))
+  distance = c;
 
+  console.log('distance:', distance, 'verbleibend:', distance_c, 'heading', heading, 'zu fahrender Winkel:', arctan)
+
+  // define engines
   run_forrest = [0, 0]
   if (heading + 1 !== arctan || heading - 1 !== arctan) {
+    // fahrzeug ausrichten
     if (heading < arctan) {
       run_forrest = [0.5, -0.6]
     } else if (heading > arctan) {
       run_forrest = [-0.6, 0.5]
     }
-    if (heading > arctan - 0.8 && heading < arctan + 0.8) {
+    // wenn heading = arctan ist (ausgerichtet)
+    if (heading > arctan - 0.8 && heading < arctan + 0.8 && distance_c > 0.3) {
       if (distance_c > 0 && distance_c > 60) {
         run_forrest = [1, 1]
-        // short to point
       }
       if (distance_c < 20) {
         run_forrest = [0.55, 0.55]
       }
-      // if arrived at point
-      if (distance_c < 0.3) {
-        run_forrest = [0, 0]
-        checkpoint += 1;
-      }
+    }
+    // Ziel erreicht, nächster checkpoint festlegen
+    if (distance_c < 0.3) {
+      run_forrest = [0, 0]
+      checkpoint += 1;
     }
   } else {
     run_forrest = [0, 0]
   }
-  console.log(checkpoint)
   // point arrived switch to next
   if (checkpoint == 1) {
     startpoint_lat = 1.000060
     startpoint_lon = 1.000010
     target_lat = 1.000090
-    target_lon = 1.000070
+    target_lon = 1.000080
   }
-  // else if (checkpoint == 2) {
-  //   startpoint_lat = 1.000090
-  //   startpoint_lon = 1.000070
-  //   target_lat = 1
-  //   target_lon = 1
-  // }
+  if (checkpoint == 2) {
+    startpoint_lat = 1.000090
+    startpoint_lon = 1.000080
+    target_lat = 1.000000
+    target_lon = 1.000000
+  }
 
   return {
     engines: run_forrest
@@ -99,7 +104,7 @@ const simulation = new Simulation({
   },
   {
     latitude: 1.000090,
-    longitude: 1.000070,
+    longitude: 1.000080,
     label: 'B'
   },
   ],
@@ -107,7 +112,7 @@ const simulation = new Simulation({
     width: 800,
     height: 800,
   },
-  // physicalConstraints: AUTHENTICITY_LEVEL1
+  //physicalConstraints: AUTHENTICITY_LEVEL1
 });
 
 simulation.start();
