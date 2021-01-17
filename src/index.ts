@@ -27,12 +27,12 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     run_forrest = [0.6, 0.6]
   } else {
     run_forrest = [0, 0]
-    if (heading < 270 && checkpoint == 0) {
+    if (heading < 270) {
       run_forrest = [0.5, -0.6]
-    } else if (heading > 270 && checkpoint == 0) {
+    } else if (heading > 270) {
       run_forrest = [-0.6, 0.5]
     }
-    if(heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint < 2) {
+    if(heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint < 3) {
       checkpoint = 1
       if(distance_lon <= -1 && checkpoint == 1) {
         checkpoint = 2
@@ -45,7 +45,7 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     } else if (heading > 180 && checkpoint == 2) {
       run_forrest = [-0.6, 0.5]
     }
-    if(heading > 180 - 0.8 && heading < 180 + 0.8 && checkpoint < 4) {
+    if(heading > 180 - 0.8 && heading < 180 + 0.8 && checkpoint > 1) {
       checkpoint = 3
       if(distance_lat >= 0.6 && checkpoint == 3) {
         checkpoint = 4
@@ -61,13 +61,21 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     }
     if(heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint > 3) {
       checkpoint = 5
-      if(distance_lon >= -2 && checkpoint == 5) {
-        checkpoint = 5
+      if(distance_lon <= -2 && checkpoint == 5) {
+        checkpoint = 6
         run_forrest = [0,0]
       } else if (checkpoint == 5) {
         run_forrest = [0.55,0.55]
       }
     }
+    if (heading < 359.2 && checkpoint == 6) {
+      run_forrest = [0.5, -0.59]
+    } else if (heading > 0.9 && checkpoint == 6) {
+      run_forrest = [-0.59, 0.5]
+    }
+  }
+  if(heading >= 359.1 && heading < 0.8 && checkpoint == 6 || checkpoint == 0) {
+    checkpoint = 0
   }
 
   // point arrived switch to next
