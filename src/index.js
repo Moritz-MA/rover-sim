@@ -23,7 +23,18 @@ const calcRouteHeading = targetLocation => {
   const b = targetLocation.longitude - locationsOfInterest[0].longitude;
   const c = Math.sqrt(a ** 2 + b ** 2);
 
-  let heading = (Math.atan2(a, b) * 180) / Math.PI;
+  let gegenkat;
+  let ankat;
+
+  if (a > b) {
+    ankat = a;
+    gegenkat = b;
+  } else {
+    ankat = b;
+    gegenkat = a;
+  }
+
+  let heading = 360 - (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
   if (heading < 0) {
     heading *= -1;
   }
@@ -36,7 +47,7 @@ const loop = ({ location, heading, clock }, { engines }) => {
   console.table([
     `Ziel Punkt: ${target.label}`,
     `Aktuelle Ausrichtung: ${Math.round(heading)}`,
-    `Ziel Aurichtung: ${targetHeading}`,
+    `Ziel Ausrichtung: ${targetHeading}`,
   ]);
 
   if (Math.round(heading) !== Math.round(targetHeading)) {
