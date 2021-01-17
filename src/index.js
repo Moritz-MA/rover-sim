@@ -1,7 +1,5 @@
 import { Simulation } from 'rover';
 
-// const checkpoint;
-
 const locationsOfInterest = [
   {
     latitude: 52.477050353132384,
@@ -30,8 +28,6 @@ const calcRouteHeading = targetLocation => {
   let gegenkat;
   let ankat;
 
-  const arctan = (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
-
   if (a > b) {
     ankat = a;
     gegenkat = b;
@@ -40,12 +36,10 @@ const calcRouteHeading = targetLocation => {
     gegenkat = a;
   }
 
-  let heading = 360 - arctan;
-
+  let heading = 360 - (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
   if (heading < 0) {
     heading *= -1;
   }
-
   return heading;
 };
 
