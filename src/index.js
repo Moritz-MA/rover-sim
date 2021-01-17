@@ -1,5 +1,7 @@
 import { Simulation } from 'rover';
 
+// const checkpoint;
+
 const locationsOfInterest = [
   {
     latitude: 52.477050353132384,
@@ -18,6 +20,8 @@ const locationsOfInterest = [
   },
 ];
 
+// ZIEL AUSRICHTUNG BESTIMMEN
+
 const calcRouteHeading = targetLocation => {
   const a = targetLocation.latitude - locationsOfInterest[0].latitude;
   const b = targetLocation.longitude - locationsOfInterest[0].longitude;
@@ -25,6 +29,8 @@ const calcRouteHeading = targetLocation => {
 
   let gegenkat;
   let ankat;
+
+  const arctan = (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
 
   if (a > b) {
     ankat = a;
@@ -34,12 +40,16 @@ const calcRouteHeading = targetLocation => {
     gegenkat = a;
   }
 
-  let heading = 360 - (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
+  let heading = 360 - arctan;
+
   if (heading < 0) {
     heading *= -1;
   }
+
   return heading;
 };
+
+// ROVER LOOP
 
 const loop = ({ location, heading, clock }, { engines }) => {
   const target = locationsOfInterest[2];
@@ -60,6 +70,8 @@ const loop = ({ location, heading, clock }, { engines }) => {
     engines: [1.0, 1.0],
   };
 };
+
+// SIMULATION
 
 const simulation = new Simulation({
   loop,
