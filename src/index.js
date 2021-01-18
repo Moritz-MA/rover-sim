@@ -20,41 +20,41 @@ const locationsOfInterest = [
 
 // ZIEL AUSRICHTUNG BESTIMMEN
 
-const calcRouteHeading = targetLocation => {
-  const a = targetLocation.latitude - locationsOfInterest[0].latitude;
-  const b = targetLocation.longitude - locationsOfInterest[0].longitude;
+const calcRouteHeading = (target, origin) => {
+  const a = target.latitude - origin.latitude;
+  const b = target.longitude - origin.longitude;
   const c = Math.sqrt(a ** 2 + b ** 2);
 
-  let gegenkat;
-  let ankat;
+  const gegenkat = a > b ? b : a;
+  const ankat = a > b ? a : b;
 
-  if (a > b) {
-    ankat = a;
-    gegenkat = b;
-  } else {
-    ankat = b;
-    gegenkat = a;
-  }
+  console.log(gegenkat);
 
-  let heading = 360 - (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
-  if (heading < 0) {
-    heading *= -1;
+  const arctan = (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
+  let angle = 360 - arctan;
+  if (angle < 0) {
+    angle *= -1;
   }
-  return heading;
+  return { a, b, c, angle };
 };
 
 // ROVER LOOP
 
 const loop = ({ location, heading, clock }, { engines }) => {
   const target = locationsOfInterest[2];
-  const targetHeading = ~~calcRouteHeading(target);
+  const start = locationsOfInterest[0];
+  const route = calcRouteHeading(target, start);
+
   console.table([
     `Ziel Punkt: ${target.label}`,
     `Aktuelle Ausrichtung: ${Math.round(heading)}`,
-    `Ziel Ausrichtung: ${targetHeading}`,
+    `Ziel Ausrichtung: ${route.angle}`,
+    `Ziel Entfernung: ${Math.round(
+      calcRouteHeading(target, start).c * 1000000000
+    ) / 100}`,
   ]);
 
-  if (Math.round(heading) !== Math.round(targetHeading)) {
+  if (Math.round(heading) !== Math.round(route.angle)) {
     return {
       engines: [0, 0],
     };
