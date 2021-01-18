@@ -4,7 +4,7 @@ let checkpoint = 0;
 let target_lat: number, target_lon: number, startpoint_lat: number, startpoint_lon: number;
 [startpoint_lat, startpoint_lon, target_lat, target_lon] = [1, 1, 1.000060, 1.000060]
 
-let ankathete, gegenkat, arctan, a: number, b: number, c: number;
+let ankathete, gegenkat, arctan, a:number, b:number, c:number;
 a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
 b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
 c = (Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))) // länge strecke c
@@ -19,10 +19,10 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
   distance = c;
   let radius = b - 1;
 
-  console.log(checkpoint, heading, engines)
+  console.log(checkpoint, heading)
 
   // define engines
-
+  run_forrest = [0, 0]
   if (distance_lat > 0.6 && checkpoint == 0) {
     run_forrest = [0.6, 0.6]
   } else {
@@ -32,12 +32,12 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     } else if (heading > 270) {
       run_forrest = [-0.6, 0.5]
     }
-    if (heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint < 3) {
+    if(heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint < 3) {
       checkpoint = 1
-      if (distance_lon <= -1 && checkpoint == 1) {
+      if(distance_lon <= -1 && checkpoint == 1) {
         checkpoint = 2
       } else if (checkpoint == 1) {
-        run_forrest = [0.55, 0.55]
+        run_forrest = [0.55,0.55]
       }
     }
     if (heading < 180 && checkpoint == 2) {
@@ -45,13 +45,13 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     } else if (heading > 180 && checkpoint == 2) {
       run_forrest = [-0.6, 0.5]
     }
-    if (heading > 180 - 0.8 && heading < 180 + 0.8 && checkpoint > 1) {
+    if(heading > 180 - 0.8 && heading < 180 + 0.8 && checkpoint > 1) {
       checkpoint = 3
-      if (distance_lat >= 0.6 && checkpoint == 3) {
+      if(distance_lat >= 0.6 && checkpoint == 3) {
         checkpoint = 4
-        run_forrest = [0, 0]
+        run_forrest = [0,0]
       } else if (checkpoint == 3) {
-        run_forrest = [0.55, 0.55]
+        run_forrest = [0.55,0.55]
       }
     }
     if (heading < 270 && checkpoint == 4) {
@@ -59,13 +59,13 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     } else if (heading > 270 && checkpoint == 4) {
       run_forrest = [-0.6, 0.5]
     }
-    if (heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint > 3) {
+    if(heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint > 3) {
       checkpoint = 5
-      if (distance_lon <= -2 && checkpoint == 5) {
+      if(distance_lon <= -2 && checkpoint == 5) {
         checkpoint = 6
-        run_forrest = [0, 0]
+        run_forrest = [0,0]
       } else if (checkpoint == 5) {
-        run_forrest = [0.55, 0.55]
+        run_forrest = [0.55,0.55]
       }
     }
     if (heading < 359.2 && checkpoint == 6) {
@@ -73,9 +73,9 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     } else if (heading > 0.9 && checkpoint == 6) {
       run_forrest = [-0.59, 0.5]
     }
-    if (heading >= 359.2 && heading < 0.8 && checkpoint > 5) {
-      console.log('---------------------------------')
-      run_forrest = [1, -1]
+    if(heading >= 359.1 && heading < 0.8 && checkpoint == 6) {
+      checkpoint = 0
+      run_forrest = [0,0]
     }
   }
 

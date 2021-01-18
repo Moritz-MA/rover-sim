@@ -28,6 +28,9 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
     arctan = 360 - (90 - arctan);
     }
   }
+  if(arctan > 360) {
+    arctan -= 360;
+  }
 
   // if running first time
   if (arctan >= 0 && checkpoint == 0) {
@@ -44,7 +47,7 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
   distance_c = (Math.sqrt(Math.pow(distance_lat, 2) + Math.pow(distance_lon, 2)))
   distance = c;
 
-  console.log('distance:', distance, 'verbleibend:', distance_c, 'heading', heading, 'zu fahrender Winkel:', arctan)
+  console.log('distance:', distance, 'verbleibend:', distance_c, 'heading', heading, 'zu fahrender Winkel:', arctan, 'engine:', engines)
 
   // define engines
   run_forrest = [0, 0]
@@ -70,18 +73,18 @@ const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
       checkpoint += 1;
     }
   } else {
-    run_forrest = [0, 0]
+    run_forrest = [-0.1, 0.1]
   }
   // point arrived switch to next
   if (checkpoint == 1) {
     startpoint_lat = 1.000060
     startpoint_lon = 1.000010
     target_lat = 1.000090
-    target_lon = 1.000080
+    target_lon = 1.00007
   }
   if (checkpoint == 2) {
     startpoint_lat = 1.000090
-    startpoint_lon = 1.000080
+    startpoint_lon = 1.00007
     target_lat = 1.000000
     target_lon = 1.000000
   }
@@ -104,7 +107,7 @@ const simulation = new Simulation({
   },
   {
     latitude: 1.000090,
-    longitude: 1.000080,
+    longitude: 1.00007,
     label: 'B'
   },
   ],
