@@ -48,20 +48,31 @@ const loop = ({ location, heading, clock }, { engines }) => {
   console.table([
     `Ziel Punkt: ${target.label}`,
     `Aktuelle Ausrichtung: ${Math.round(heading)}`,
-    `Ziel Ausrichtung: ${route.angle}`,
+    `Ziel Ausrichtung: ${Math.round(route.angle)}`,
     `Ziel Entfernung: ${Math.round(
       calcRouteHeading(target, start).c * 1000000000
     ) / 100}`,
   ]);
 
+  const angleDiff = (angle1, angle2) => {
+    let targetAngle = angle2 - angle1;
+    targetAngle -= targetAngle > 180 ? 360 : 0;
+    targetAngle += targetAngle < -180 ? 360 : 0;
+    return targetAngle;
+  };
+
   if (Math.round(heading) !== Math.round(route.angle)) {
+    if (angleDiff(route.angle, heading) >= 0) {
+      return {
+        engines: [-0.3, 0.3],
+      };
+    }
     return {
-      engines: [0, 0],
+      engines: [0.3, -0.3],
     };
   }
-
   return {
-    engines: [1.0, 1.0],
+    engines: [0.6, 0.6],
   };
 };
 
