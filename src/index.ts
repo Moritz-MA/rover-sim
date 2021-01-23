@@ -2,91 +2,75 @@ import { ControlLoop, Simulation, AUTHENTICITY_LEVEL1 } from 'rover'
 
 let checkpoint = 0;
 let target_lat: number, target_lon: number, startpoint_lat: number, startpoint_lon: number;
-[startpoint_lat, startpoint_lon, target_lat, target_lon] = [1, 1, 1.000060, 1.000060]
+[startpoint_lat, startpoint_lon, target_lat, target_lon] = [1, 1, 1.000110, 0.99995]
 
-let ankathete, gegenkat, arctan, a: number, b: number, c: number;
-a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
-b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
-c = (Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))) // länge strecke c
+let location_arr = [{ 'latitude': startpoint_lat, 'longitude': startpoint_lon, 'label': 'Start' }, { 'latitude': target_lat, 'longitude': target_lon, 'label': 'Finsh' },]
 
+const loop: ControlLoop = ({ location, heading, clock, proximity }, { engines }) => {
 
-const loop: ControlLoop = ({ location, heading, clock }, { engines }) => {
+  let ankathete, gegenkat, arctan, a, b, c;
+  a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
+  b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
+  c = (Math.sqrt(a ** 2 + b ** 2)) // länge strecke c
+  // katheten definieren
+  if (a > b) {
+    ankathete = a;
+    gegenkat = b;
+  } else {
+    ankathete = b;
+    gegenkat = a;
+  }
+  // calc tan of tangens
+  arctan = (Math.atan2(gegenkat, ankathete) * 180 / Math.PI);
+  // if running first time
+  if (arctan >= 0 && checkpoint == 0) {
+    arctan -= 360;
+    arctan *= -1;
+  } else if (arctan < 0 && checkpoint == 0) {
+    arctan += 360;
+  }
+
 
   let run_forrest, distance_c, distance, distance_lat, distance_lon;
   distance_lat = ((target_lat - location.latitude) * 100000);
   distance_lon = ((target_lon - location.longitude) * 100000);
-  distance_c = (Math.sqrt(Math.pow(distance_lat, 2) + Math.pow(distance_lon, 2)))
+  distance_c = (Math.sqrt(distance_lat ** 2 + distance_lon ** 2))
   distance = c;
-  let radius = b - 1;
-
-  console.log(checkpoint, heading, engines)
+    console.log( proximity,engines)
+    let aas = 1
 
   // define engines
+  run_forrest = [0.8, 0.8]
+  for (let i = 0; i < proximity.length; i++) {
+    if (i <= 11) {
+      if (proximity[i] <= 2 && proximity[i] !== -1) {
+        run_forrest = [-0.9, 0.8]
+        aas = 2
+      }
+      if (proximity[15] !== -1) {
+        aas = 2
+        run_forrest = [0.8, 0.8]
+      }
+    }
+    // if(i >= 85 && i <= 95) {
+    //   if(proximity[i] > 5 && proximity[i] !== -1) {
+    //     aas = 1
+    //   }
+    // }
 
-  if (distance_lat > 0.6 && checkpoint == 0) {
-    run_forrest = [0.6, 0.6]
-  } else {
-    run_forrest = [0, 0]
-    if (heading < 270) {
-      run_forrest = [0.5, -0.6]
-    } else if (heading > 270) {
-      run_forrest = [-0.6, 0.5]
-    }
-    if (heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint < 3) {
-      checkpoint = 1
-      if (distance_lon <= -1 && checkpoint == 1) {
-        checkpoint = 2
-      } else if (checkpoint == 1) {
-        run_forrest = [0.55, 0.55]
+    else {
+      if (checkpoint == 0 && aas == 1) {
+        if (heading < arctan) {
+          run_forrest = [0.85, -0.8]
+        } else {
+          run_forrest = [-0.8, 0.85]
+        }
+        if (heading + 1 > arctan && heading - 1 < arctan) {
+          run_forrest = [0.8, 0.8]
+        }
       }
-    }
-    if (heading < 180 && checkpoint == 2) {
-      run_forrest = [0.5, -0.6]
-    } else if (heading > 180 && checkpoint == 2) {
-      run_forrest = [-0.6, 0.5]
-    }
-    if (heading > 180 - 0.8 && heading < 180 + 0.8 && checkpoint > 1) {
-      checkpoint = 3
-      if (distance_lat >= 0.6 && checkpoint == 3) {
-        checkpoint = 4
-        run_forrest = [0, 0]
-      } else if (checkpoint == 3) {
-        run_forrest = [0.55, 0.55]
-      }
-    }
-    if (heading < 270 && checkpoint == 4) {
-      run_forrest = [0.5, -0.6]
-    } else if (heading > 270 && checkpoint == 4) {
-      run_forrest = [-0.6, 0.5]
-    }
-    if (heading > 270 - 0.8 && heading < 270 + 0.8 && checkpoint > 3) {
-      checkpoint = 5
-      if (distance_lon <= -2 && checkpoint == 5) {
-        checkpoint = 6
-        run_forrest = [0, 0]
-      } else if (checkpoint == 5) {
-        run_forrest = [0.55, 0.55]
-      }
-    }
-    if (heading < 359.2 && checkpoint == 6) {
-      run_forrest = [0.5, -0.59]
-    } else if (heading > 0.9 && checkpoint == 6) {
-      run_forrest = [-0.59, 0.5]
-    }
-    if (heading >= 359.2 && heading < 0.8 && checkpoint > 5) {
-      console.log('---------------------------------')
-      run_forrest = [1, -1]
     }
   }
-
-  // point arrived switch to next
-  if (checkpoint == 1) {
-    startpoint_lat = 1.000060
-    startpoint_lon = 1.000060
-    target_lat = 1.00000
-    target_lon = 1.00000
-  }
-
   return {
     engines: run_forrest
   }
@@ -98,17 +82,15 @@ const simulation = new Simulation({
     longitude: startpoint_lon,
   },
   element: document.querySelector('main') as HTMLElement,
-  locationsOfInterest: [{
-    latitude: target_lat,
-    longitude: target_lon,
-    label: 'A'
-  },
-  ],
+  locationsOfInterest: location_arr,
   renderingOptions: {
     width: 800,
     height: 800,
   },
   //physicalConstraints: AUTHENTICITY_LEVEL1
+  obstacles: [
+    { latitude: 1.00004, longitude: 1.000015, radius: 0.6 },
+  ],
 });
 
 simulation.start();
