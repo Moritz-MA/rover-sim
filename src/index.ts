@@ -1,12 +1,15 @@
-import { ControlLoop, Simulation, AUTHENTICITY_LEVEL1 } from 'rover'
+import { ControlLoop, Simulation, AUTHENTICITY_LEVEL1, RoverType, Engines, Steering } from 'rover'
 
 let checkpoint = 0;
-let target_lat: number, target_lon: number, startpoint_lat: number, startpoint_lon: number;
+let target_lat: number;
+let target_lon: number;
+let startpoint_lat: number;
+let startpoint_lon: number;
 [startpoint_lat, startpoint_lon, target_lat, target_lon] = [1, 1, 1.000110, 0.99995]
 
 let location_arr = [{ 'latitude': startpoint_lat, 'longitude': startpoint_lon, 'label': 'Start' }, { 'latitude': target_lat, 'longitude': target_lon, 'label': 'Finsh' },]
 
-const loop: ControlLoop = ({ location, heading, clock, proximity }, { engines }) => {
+const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSignal }, { engines, steering }) => {
 
   let ankathete, gegenkat, arctan, a, b, c;
   a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
@@ -36,8 +39,10 @@ const loop: ControlLoop = ({ location, heading, clock, proximity }, { engines })
   distance_lon = ((target_lon - location.longitude) * 100000);
   distance_c = (Math.sqrt(distance_lat ** 2 + distance_lon ** 2))
   distance = c;
-    console.log( proximity,engines)
-    let aas = 1
+  console.log(proximity, engines)
+  let aas = 1
+  const min_speed = 0.51;
+
 
   // define engines
   run_forrest = [0.8, 0.8]
@@ -71,12 +76,20 @@ const loop: ControlLoop = ({ location, heading, clock, proximity }, { engines })
       }
     }
   }
+  const e:Engines = [
+    run_forrest[0], run_forrest[1],
+    run_forrest[0], run_forrest[1],
+    run_forrest[0], run_forrest[1]
+  ]
+  const s:Steering = [0,0,0,0]
   return {
-    engines: run_forrest
+    engines: e,
+    steering: s
   }
 }
 const simulation = new Simulation({
   loop,
+  roverType: RoverType.tank,
   origin: {
     latitude: startpoint_lat,
     longitude: startpoint_lon,

@@ -1,19 +1,29 @@
-const path = require('path');
+const path = require('path')
 
 module.exports = {
+  devtool: 'eval-source-map',
   mode: 'development',
-  entry: './src/index.js',
-  output: {
-    filename: 'main.js',
-    path: path.resolve(__dirname, 'build'),
+  entry: './src/index.ts',
+  module: {
+    rules: [
+      {
+        test: /.ts$/,
+        use: 'ts-loader',
+        include: [path.resolve(__dirname, 'src')],
+      }
+    ],
   },
-  watch: true,
-  watchOptions: {
-    ignored: 'node_modules/**',
+  output: {
+    publicPath: 'public',
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'public'),
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
   },
   devServer: {
-    contentBase: path.join(__dirname, 'build'),
-    compress: true,
-    port: 9000,
-  },
-};
+    publicPath: "/",
+    contentBase: "./public",
+    hot: true
+  }
+}
