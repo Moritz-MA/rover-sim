@@ -2,6 +2,8 @@ import { LatLon } from 'geodesy/utm';
 import { ControlLoop, Simulation, AUTHENTICITY_LEVEL1, RoverType, Engines, Steering } from 'rover'
 
 let checkpoint = 0;
+let search_radius = 9;  // wie nah soll der bereich gecheckt werden
+let counter = 1;
 let target_lat: number;
 let target_lon: number;
 let target_b_lat: number;
@@ -31,6 +33,13 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     target_lat = 1.00005;
     target_lon = 1.0001;
   }
+  if(checkpoint == 404) {
+    startpoint_lat = location.latitude;
+    startpoint_lon = location.longitude;
+    target_lat = location_arr[0].latitude;
+    target_lon = location_arr[0].longitude;
+  }
+
 
   let ankathete, gegenkat, arctan, a, b, c, stop, min_speed, speed, turn_left, turn_right, backwards, backwards_min, max_speed;
   a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
@@ -54,27 +63,43 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     arctan *= -1;
   }
 
-  let run_forrest, distance_c, distance, distance_lat, distance_lon;
+  let run_forrest, distance_c, distance, distance_lat, distance_lon, distance_lat_area, distance_lat_area_live;
   distance_lat = ((target_lat - location.latitude) * 100000);
   distance_lon = ((target_lon - location.longitude) * 100000);
+  distance_lat_area = ((target_lat - target_b_lat) * 100000);
+  distance_lat_area_live = ((location.latitude - target_b_lat) * 100000)
+  if(distance_lat_area < 0) {
+  distance_lat_area *= -1;
+  }
+  if(distance_lat_area_live < 0) {
+    distance_lat_area_live *= -1;
+  }
   distance_c = (Math.sqrt(Math.pow(distance_lat, 2) + Math.pow(distance_lon, 2)))
   distance = c;
 
   if(checkpoint == 1) {
     arctan = 90
-    distance_c = distance_lon
+    distance_c = distance_lon 
   }
   if (checkpoint == 2) {
     arctan = 180
-    distance_c = ((target_lat - location.latitude) * 100000)
+    distance_c = 1
+    if(distance_lat_area_live < distance_lat_area - counter) {
+      distance_c = 0
+      counter += search_radius
+    }
   }
   if (checkpoint == 3) {
     arctan = 270
-    distance_c = ((location.longitude - target_lon) * -100000)
+    distance_c = ((location.longitude - target_lon) * 100000) + b;
   }
   if (checkpoint == 4) {
-    arctan = 90
-    distance_c = 1.000
+    arctan = 180
+    distance_c = 1
+    if(distance_lat_area_live < distance_lat_area - counter) {
+      distance_c = 0
+      counter += search_radius
+    }
   }
   if (checkpoint == 5) {
     checkpoint = 1
@@ -82,6 +107,10 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   if(distance_c <= 0.1) {
     checkpoint += 1
   }
+  if(counter >= distance_lat_area) {
+    checkpoint = 404
+  }
+
 
   // define engine
   stop = [0, 0];
@@ -93,8 +122,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   backwards = [-0.84, -0.84]
   backwards_min = [-0.53, -0.53]
 
-  console.log(arctan, heading, checkpoint)
-  console.log(distance_c)
+  console.log(arctan)
 
   run_forrest = stop
 
@@ -118,7 +146,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     } else if (distance_c <= 60) {
       run_forrest = speed
     }
-    if (distance_c < 4) {
+    if (distance_c < 4) { // default 10
       run_forrest = min_speed
     }
   }
