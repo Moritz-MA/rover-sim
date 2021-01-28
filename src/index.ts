@@ -66,7 +66,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   }
   if (checkpoint == 2) {
     arctan = 180
-    distance_c = ((target_lat - location.latitude) * 100000
+    distance_c = ((target_lat - location.latitude) * 100000)
   }
   if (checkpoint == 3) {
     arctan = 270
@@ -118,7 +118,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     } else if (distance_c <= 60) {
       run_forrest = speed
     }
-    if (distance_c < 15) {
+    if (distance_c < 4) {
       run_forrest = min_speed
     }
   }
