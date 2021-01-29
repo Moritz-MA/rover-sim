@@ -12,7 +12,7 @@ let target_b_lon: number;
 let startpoint_lat: number;
 let startpoint_lon: number;
 let higher_lower = false;
-[startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00008, 1.000008, 1.0002, 1.0001]
+[startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00005, 1.00006, 1.0002, 1.0002]
 
 let location_arr = [{ 'latitude': startpoint_lat, 'longitude': startpoint_lon, 'label': 'Origin' }, { 'latitude': target_lat, 'longitude': target_lon, 'label': 'Start' }]
 
@@ -22,17 +22,12 @@ console.log(location_arr)
 
 const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSignal }, { engines, steering }) => {
 
-  if (checkpoint == 0) {
-    startpoint_lat = location_arr[0].latitude;
-    startpoint_lon = location_arr[0].longitude;
-    target_lat = location_arr[1].latitude;
-    target_lon = location_arr[1].longitude;
-  }
+
   if (checkpoint == 1) {
     startpoint_lat = 1.00005;
-    startpoint_lon = 1.000008;
-    target_lat = 1.00005;
-    target_lon = 1.0001;
+    startpoint_lon = 1.00006;
+    target_lat = 1.0002;
+    target_lon = 1.0002;
   }
   if (checkpoint == 404) {
     startpoint_lat = location.latitude;
@@ -51,15 +46,18 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
   c = (Math.sqrt(a ** 2 + b ** 2)) // länge strecke c
   // katheten definieren
-  if (a < 0) a *= -1;
-  if (b < 0) b *= -1;
+  if(checkpoint == 0 && startpoint_lon > target_lon) {  // if startpoint is left
+    if (a < 0) a *= -1;
+    if (b < 0) b *= -1;
+  }
+
   ankathete = 0;
   gegenkat = 0;
-  if (a >= b && checkpoint == 0) {
+  if (a <= b && checkpoint == 0) {
     ankathete = a;
     gegenkat = b;
   }
-  if (a < b && checkpoint == 0) {
+  if (a > b && checkpoint == 0) {
     ankathete = b;
     gegenkat = a;
   }
@@ -69,6 +67,17 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   if (arctan < 0) {
     arctan *= -1;
   }
+  if(checkpoint == 0 && startpoint_lon > target_lon) {  // if startpoint is left
+    if (arctan >= 0 && checkpoint == 0) {
+      arctan -= 360;
+      arctan *= -1;
+    } else if (arctan < 0 && checkpoint == 0) {
+      arctan += 360;
+    }
+  }
+
+  console.log(arctan, gegenkat, ankathete)
+
 
   let run_forrest, distance_c, distance, distance_lat, distance_lon, distance_lat_area, distance_lat_area_live;
   distance_lat = ((target_lat - location.latitude) * 100000);
@@ -77,7 +86,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     distance_lat_area = ((target_lat - target_b_lat) * 100000);
     distance_lat_area_live = ((location.latitude - target_b_lat) * 100000)
   } else {
-    distance_lat_area = ((target_b_lat - target_lat) * 100000);
+    distance_lat_area = ((target_b_lat - startpoint_lat) * 100000);
     distance_lat_area_live = ((target_b_lat - location.latitude) * 100000)
   }
   if (distance_lat_area < 0) {
@@ -126,6 +135,10 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     if (checkpoint == 1) {
       arctan = 90
       distance_c = distance_lon
+      if(target_lon < startpoint_lon) {
+        arctan = 270
+        distance_c = distance_lon * -1;
+      }
     }
     if (checkpoint == 2) {
       arctan = 0
@@ -138,9 +151,13 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     if (checkpoint == 3) {
       arctan = 270
       distance_c = ((location.longitude - target_lon) * 100000) + b;
+      if(target_lon < startpoint_lon) {
+        arctan = 90
+        distance_c = (b + ((location.longitude - target_lon) * 100000)) * -1;
+      }
     }
     if (checkpoint == 4) {
-      arctan = 180
+      arctan = 0
       distance_c = 1
       if (distance_lat_area_live < distance_lat_area - counter) {
         distance_c = 0
@@ -153,9 +170,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     if (distance_c <= 0.1) {
       checkpoint += 1
     }
-    if (counter >= distance_lat_area) {
-      checkpoint = 404
-    }
+
   }
 
 
@@ -169,8 +184,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   backwards = [-0.84, -0.84]
   backwards_min = [-0.53, -0.53]
 
-  console.log([arctan, heading], [checkpoint, counter])
-  console.log(distance_c)
+
 
   run_forrest = stop
 
@@ -194,7 +208,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
     } else if (distance_c <= 60) {
       run_forrest = speed
     }
-    if (distance_c < 4) { // default 10
+    if (distance_c < 10) { // default 10
       run_forrest = min_speed
     }
   }
