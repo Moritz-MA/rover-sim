@@ -1,5 +1,5 @@
 import { LatLon } from 'geodesy/utm';
-import { ControlLoop, Simulation, AUTHENTICITY_LEVEL2, RoverType, Engines, Steering } from 'rover'
+import { ControlLoop, Simulation, AUTHENTICITY_LEVEL2, Engines, Steering, VehicleType } from 'rover'
 
 let checkpoint = 0;
 let start_higher = false;
@@ -237,7 +237,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
 }
 const simulation = new Simulation({
   loop,
-  roverType: RoverType.tank,
+  vehicleType: VehicleType.Tank,
   origin: {
     latitude: startpoint_lat,
     longitude: startpoint_lon,

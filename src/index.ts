@@ -1,8 +1,9 @@
 import { LatLon } from 'geodesy/utm';
-import { ControlLoop, Simulation, AUTHENTICITY_LEVEL2, RoverType, Engines, Steering } from 'rover'
+import { ControlLoop, Simulation, AUTHENTICITY_LEVEL2, Engines, Steering, VehicleType } from 'rover'
 
 let checkpoint = 0;
 let no_obstacles = true;
+let rotate_now:boolean = false
 let target_lat: number;
 let target_lon: number;
 let startpoint_lat: number;
@@ -18,7 +19,7 @@ console.log(location_arr)
 const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSignal }, { engines, steering }) => {
 
 
-  let ankathete, gegenkat, arctan, a, b, c, stop, min_speed, speed, turn_left, turn_right, backwards, backwards_min, max_speed;
+  let ankathete, gegenkat, arctan:any, a, b, c, stop, min_speed, speed:any, turn_left:any, turn_right, backwards, backwards_min, max_speed;
   a = ((target_lat - startpoint_lat) * 100000);   // länge strecke a
   b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
   c = (Math.sqrt(a ** 2 + b ** 2)) // länge strecke c
@@ -107,15 +108,18 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   if (proximity[0] < 3 && proximity[0] !== -1) {
     no_obstacles = false
     run_forrest = stop
-    setTimeout(function() {})
-    if (proximity[2] < proximity[177]) {
-      run_forrest = turn_left
-      if (heading < 360 - arctan - 91 && heading > 360 - arctan - 89) {
-        run_forrest = speed
-      }
+    setTimeout(function () {
+      rotate_now = true
+    }, 1600)
+  }
+  if (rotate_now) {
+    run_forrest = turn_left
+    if (proximity[10] > 3 && proximity[1] > 3) {
+      run_forrest = speed
+      rotate_now = false
     }
   }
-  if(!no_obstacles && proximity[0] >= 3) {
+  if(!no_obstacles && proximity[0] >= 3 && !rotate_now) {
     run_forrest = speed
     const isBelowThreshold = (currentValue:number) => currentValue >= 4;
       if (proximity.every(isBelowThreshold)) {
@@ -123,7 +127,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
         setTimeout(function() {
           startpoint_lat = location.latitude;
           startpoint_lon = location.longitude;
-        }, 1500)
+        }, 1900)
         setTimeout(function() {
           no_obstacles = true
         }, 2000)
@@ -131,7 +135,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   }
 
 
-  console.log(proximity[0], heading, arctan, no_obstacles)
+  console.log(proximity[0], heading, arctan, proximity[15])
 
 
   const e: Engines = [
@@ -147,7 +151,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
 }
 const simulation = new Simulation({
   loop,
-  roverType: RoverType.tank,
+  vehicleType: VehicleType.Tank,
   origin: {
     latitude: startpoint_lat,
     longitude: startpoint_lon,
@@ -160,7 +164,7 @@ const simulation = new Simulation({
   },
   // physicalConstraints: AUTHENTICITY_LEVEL2,
   obstacles: [
-    { latitude: 1.0001, longitude: 1.00001, radius: 1.3 },
+    { latitude: 1.0001, longitude: 1.00000, radius: 1.3 },
   ],
 });
 
