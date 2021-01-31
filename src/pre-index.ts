@@ -5,6 +5,8 @@ let checkpoint = 0;
 let start_higher = false;
 let search_radius = 1;  // wie nah soll der bereich gecheckt werden
 let counter = search_radius;
+let no_obstacles = true;
+let rotate_now: boolean = false
 let target_lat: number;
 let target_lon: number;
 let target_b_lat: number;
@@ -12,7 +14,7 @@ let target_b_lon: number;
 let startpoint_lat: number;
 let startpoint_lon: number;
 let higher_lower = false;
-[startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00005, 1.00006, 1.0002, 1.0002]
+[startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00005, 1.00002, 1.0002, 1.0002]
 
 let location_arr = [{ 'latitude': startpoint_lat, 'longitude': startpoint_lon, 'label': 'Origin' }, { 'latitude': target_lat, 'longitude': target_lon, 'label': 'Start' }]
 
@@ -25,7 +27,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
 
   if (checkpoint == 1) {
     startpoint_lat = 1.00005;
-    startpoint_lon = 1.00006;
+    startpoint_lon = 1.00002;
     target_lat = 1.0002;
     target_lon = 1.0002;
   }
@@ -46,7 +48,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   b = ((target_lon - startpoint_lon) * 100000);   // länge strecke b
   c = (Math.sqrt(a ** 2 + b ** 2)) // länge strecke c
   // katheten definieren
-  if(checkpoint == 0 && startpoint_lon > target_lon) {  // if startpoint is left
+  if (checkpoint == 0 && startpoint_lon > target_lon) {  // if startpoint is left
     if (a < 0) a *= -1;
     if (b < 0) b *= -1;
   }
@@ -67,7 +69,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   if (arctan < 0) {
     arctan *= -1;
   }
-  if(checkpoint == 0 && startpoint_lon > target_lon) {  // if startpoint is left
+  if (checkpoint == 0 && startpoint_lon > target_lon) {  // if startpoint is left
     if (arctan >= 0 && checkpoint == 0) {
       arctan -= 360;
       arctan *= -1;
@@ -82,7 +84,7 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   let run_forrest, distance_c, distance, distance_lat, distance_lon, distance_lat_area, distance_lat_area_live;
   distance_lat = ((target_lat - location.latitude) * 100000);
   distance_lon = ((target_lon - location.longitude) * 100000);
-  if(!start_higher) {
+  if (!start_higher) {
     distance_lat_area = ((target_lat - target_b_lat) * 100000);
     distance_lat_area_live = ((location.latitude - target_b_lat) * 100000)
   } else {
@@ -97,80 +99,113 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
   }
   distance_c = (Math.sqrt(Math.pow(distance_lat, 2) + Math.pow(distance_lon, 2)))
   distance = c;
-  if (!start_higher) {
-    if (checkpoint == 1) {
-      arctan = 90
-      distance_c = distance_lon
-    }
-    if (checkpoint == 2) {
-      arctan = 180
-      distance_c = 1
-      if (distance_lat_area_live < distance_lat_area - counter) {
-        distance_c = 0
-        counter += search_radius
-      }
-    }
-    if (checkpoint == 3) {
-      arctan = 270
-      distance_c = ((location.longitude - target_lon) * 100000) + b;
-    }
-    if (checkpoint == 4) {
-      arctan = 180
-      distance_c = 1
-      if (distance_lat_area_live < distance_lat_area - counter) {
-        distance_c = 0
-        counter += search_radius
-      }
-    }
-    if (checkpoint == 5) {
-      checkpoint = 1
-    }
-    if (distance_c <= 0.1) {
-      checkpoint += 1
-    }
-    if (counter >= distance_lat_area) {
-      checkpoint = 404
-    }
-  } else {
-    if (checkpoint == 1) {
-      arctan = 90
-      distance_c = distance_lon
-      if(target_lon < startpoint_lon) {
-        arctan = 270
-        distance_c = distance_lon * -1;
-      }
-    }
-    if (checkpoint == 2) {
-      arctan = 0
-      distance_c = 1
-      if (distance_lat_area_live < distance_lat_area - counter) {
-        distance_c = 0
-        counter += search_radius
-      }
-    }
-    if (checkpoint == 3) {
-      arctan = 270
-      distance_c = ((location.longitude - target_lon) * 100000) + b;
-      if(target_lon < startpoint_lon) {
+  if (no_obstacles) {
+    if (!start_higher) {
+      if (checkpoint == 1) {
         arctan = 90
-        distance_c = (b + ((location.longitude - target_lon) * 100000)) * -1;
+        distance_c = distance_lon
+      }
+      if (checkpoint == 2) {
+        arctan = 180
+        distance_c = 1
+        if (distance_lat_area_live < distance_lat_area - counter) {
+          distance_c = 0
+          counter += search_radius
+        }
+      }
+      if (checkpoint == 3) {
+        arctan = 270
+        distance_c = ((location.longitude - target_lon) * 100000) + b;
+      }
+      if (checkpoint == 4) {
+        arctan = 180
+        distance_c = 1
+        if (distance_lat_area_live < distance_lat_area - counter) {
+          distance_c = 0
+          counter += search_radius
+        }
+      }
+      if (checkpoint == 5) {
+        checkpoint = 1
+      }
+      if (distance_c <= 0.1) {
+        checkpoint += 1
+      }
+      if (counter >= distance_lat_area) {
+        checkpoint = 404
+      }
+    } else {
+      if (checkpoint == 1) {
+        arctan = 90
+        distance_c = distance_lon
+        if (target_lon < startpoint_lon) {
+          arctan = 270
+          distance_c = distance_lon * -1;
+        }
+      }
+      if (checkpoint == 2) {
+        arctan = 0
+        distance_c = 1
+        if (distance_lat_area_live < distance_lat_area - counter) {
+          distance_c = 0
+          counter += search_radius
+        }
+      }
+      if (checkpoint == 3) {
+        arctan = 270
+        distance_c = ((location.longitude - target_lon) * 100000) + b;
+        if (target_lon < startpoint_lon) {
+          arctan = 90
+          distance_c = (b + ((location.longitude - target_lon) * 100000)) * -1;
+        }
+      }
+      if (checkpoint == 4) {
+        arctan = 0
+        distance_c = 1
+        if (distance_lat_area_live < distance_lat_area - counter) {
+          distance_c = 0
+          counter += search_radius
+        }
+      }
+      if (checkpoint == 5) {
+        checkpoint = 1
+      }
+      if (distance_c <= 0.1) {
+        checkpoint += 1
       }
     }
-    if (checkpoint == 4) {
-      arctan = 0
-      distance_c = 1
-      if (distance_lat_area_live < distance_lat_area - counter) {
-        distance_c = 0
-        counter += search_radius
+  }
+  if (proximity[0] < 3 && proximity[0] !== -1) {
+    no_obstacles = false
+    run_forrest = stop
+    setTimeout(function () {
+      rotate_now = true
+    }, 1600)
+  }
+  if (rotate_now) {
+    if (proximity[1] < proximity[178]) {
+      run_forrest = turn_left
+      if (proximity[10] > 3 && proximity[1] > 3) {
+        run_forrest = speed
+        rotate_now = false
+      }
+    } else {
+      run_forrest = turn_right
+      if (proximity[169] > 3 && proximity[179] > 3) {
+        run_forrest = speed
+        rotate_now = false
       }
     }
-    if (checkpoint == 5) {
-      checkpoint = 1
+  }
+  if (!no_obstacles && proximity[0] >= 3 && !rotate_now) {
+    run_forrest = speed
+    const isBelowThreshold = (currentValue: number) => currentValue >= 2;
+    if (proximity.every(isBelowThreshold)) {
+      run_forrest = stop
+      setTimeout(function () {
+        no_obstacles = true
+      }, 2000)
     }
-    if (distance_c <= 0.1) {
-      checkpoint += 1
-    }
-
   }
 
 
@@ -250,7 +285,7 @@ const simulation = new Simulation({
   },
   // physicalConstraints: AUTHENTICITY_LEVEL2,
   obstacles: [
-    // { latitude: 1.00004, longitude: 1.000015, radius: 0.6 },
+    { latitude: 1.00008, longitude: 1.000035, radius: 0.6 },
   ],
 });
 
