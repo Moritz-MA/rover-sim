@@ -7,7 +7,7 @@ let start_higher = false;
 let counter = search_radius;
 let higher_lower = false;
 let target_lat: number, target_lon: number, target_b_lat: number, target_b_lon: number, startpoint_lat: number, startpoint_lon: number;
-[startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00005, 1.00006, 1.0002, 1.0002]
+[startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00007, 1.00009, 1.0002, 0.99991]
 
 let location_arr = [{ 'latitude': startpoint_lat, 'longitude': startpoint_lon, 'label': 'Origin' }, { 'latitude': target_lat, 'longitude': target_lon, 'label': 'Start' }]
 location_arr.push({ 'latitude': target_b_lat, 'longitude': target_b_lon, 'label': 'finsh' })
@@ -16,11 +16,12 @@ const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSi
 
 
   if (checkpoint == 1) {
-    startpoint_lat = 1.00005;
-    startpoint_lon = 1.00006;
+    startpoint_lat = 1.00007;
+    startpoint_lon = 1.00009;
     target_lat = 1.0002;
-    target_lon = 1.0002;
+    target_lon = 0.99991;
   }
+
   if (checkpoint == 404) {
     startpoint_lat = location.latitude;
     startpoint_lon = location.longitude;
