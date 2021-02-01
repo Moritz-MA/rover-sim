@@ -1,24 +1,16 @@
 import { LatLon } from 'geodesy/utm';
 import { ControlLoop, Simulation, AUTHENTICITY_LEVEL2, Engines, Steering, VehicleType } from 'rover'
 
+let search_radius = 1;  // wie nah soll der bereich gecheckt werden
 let checkpoint = 0;
 let start_higher = false;
-let search_radius = 1;  // wie nah soll der bereich gecheckt werden
 let counter = search_radius;
-let target_lat: number;
-let target_lon: number;
-let target_b_lat: number;
-let target_b_lon: number;
-let startpoint_lat: number;
-let startpoint_lon: number;
 let higher_lower = false;
+let target_lat: number, target_lon: number, target_b_lat: number, target_b_lon: number, startpoint_lat: number, startpoint_lon: number;
 [startpoint_lat, startpoint_lon, target_lat, target_lon, target_b_lat, target_b_lon] = [1.00004, 1, 1.00005, 1.00006, 1.0002, 1.0002]
 
 let location_arr = [{ 'latitude': startpoint_lat, 'longitude': startpoint_lon, 'label': 'Origin' }, { 'latitude': target_lat, 'longitude': target_lon, 'label': 'Start' }]
-
 location_arr.push({ 'latitude': target_b_lat, 'longitude': target_b_lon, 'label': 'finsh' })
-
-console.log(location_arr)
 
 const loop: ControlLoop = ({ location, heading, clock, proximity, targetFinderSignal }, { engines, steering }) => {
 

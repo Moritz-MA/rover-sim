@@ -4,10 +4,7 @@ import { ControlLoop, Simulation, AUTHENTICITY_LEVEL2, Engines, Steering, Vehicl
 let checkpoint = 0;
 let no_obstacles = true;
 let rotate_now: boolean = false
-let target_lat: number;
-let target_lon: number;
-let startpoint_lat: number;
-let startpoint_lon: number;
+let target_lat: number,target_lon: number,startpoint_lat: number,startpoint_lon: number;
 let higher_lower = false;
 [startpoint_lat, startpoint_lon, target_lat, target_lon] = [1.00004, 1, 1.0002, 1.00002]
 
