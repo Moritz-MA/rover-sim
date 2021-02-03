@@ -1,5 +1,7 @@
 import { Simulation } from 'rover';
 
+// ZIELPUNKTE
+
 const locationsOfInterest = [
   {
     latitude: 52.477050353132384,
@@ -18,6 +20,8 @@ const locationsOfInterest = [
   },
 ];
 
+const startTarget = locationsOfInterest[2];
+
 // ZIEL AUSRICHTUNG BESTIMMEN
 
 const calcRouteHeading = (target, origin) => {
@@ -25,54 +29,58 @@ const calcRouteHeading = (target, origin) => {
   const b = target.longitude - origin.longitude;
   const c = Math.sqrt(a ** 2 + b ** 2);
 
-  const gegenkat = a > b ? b : a;
-  const ankat = a > b ? a : b;
+  let angle = (Math.atan2(b, a) * 180) / Math.PI;
 
-  console.log(gegenkat);
-
-  const arctan = (Math.atan2(gegenkat, ankat) * 180) / Math.PI;
-  let angle = 360 - arctan;
   if (angle < 0) {
-    angle *= -1;
+    angle = 360 + angle;
   }
+
   return { a, b, c, angle };
 };
 
 // ROVER LOOP
 
 const loop = ({ location, heading, clock }, { engines }) => {
-  const target = locationsOfInterest[2];
-  const start = locationsOfInterest[0];
-  const route = calcRouteHeading(target, start);
+  const target = startTarget;
+  const route = calcRouteHeading(target, location);
+
+  // NAV INFOS
 
   console.table([
     `Ziel Punkt: ${target.label}`,
     `Aktuelle Ausrichtung: ${Math.round(heading)}`,
     `Ziel Ausrichtung: ${Math.round(route.angle)}`,
-    `Ziel Entfernung: ${Math.round(
-      calcRouteHeading(target, start).c * 1000000000
-    ) / 100}`,
+    `Ziel Entfernung: ${Math.round(route.c * 1000000000) / 100}`,
   ]);
 
-  const angleDiff = (angle1, angle2) => {
+  // DREHRICHTUNG BESTIMMEN
+
+  const angleDiff = (angle2, angle1) => {
     let targetAngle = angle2 - angle1;
     targetAngle -= targetAngle > 180 ? 360 : 0;
     targetAngle += targetAngle < -180 ? 360 : 0;
     return targetAngle;
   };
 
-  if (Math.round(heading) !== Math.round(route.angle)) {
-    if (angleDiff(route.angle, heading) >= 0) {
+  // KURS KORRIGIERUNG
+
+  if (
+    Math.round(heading) !== Math.round(calcRouteHeading(target, location).angle)
+  ) {
+    if (angleDiff(calcRouteHeading(target, location).angle, heading) >= 0) {
       return {
-        engines: [-0.3, 0.3],
+        engines: [-0.85, 0.85],
       };
     }
     return {
-      engines: [0.3, -0.3],
+      engines: [0.85, -0.85],
     };
   }
+
+  // VOLLES ROHR
+
   return {
-    engines: [0.6, 0.6],
+    engines: [0.85, 0.85],
   };
 };
 
