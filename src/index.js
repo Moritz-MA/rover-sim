@@ -18,9 +18,15 @@ const locationsOfInterest = [
     longitude: 13.395492227289209,
     label: 'B',
   },
+  {
+    latitude: 52.476900453132384,
+    longitude: 13.395402227289209,
+    label: 'C',
+  },
 ];
 
-const startTarget = locationsOfInterest[2];
+let n = 1;
+let target;
 
 // ZIEL AUSRICHTUNG BESTIMMEN
 
@@ -41,13 +47,13 @@ const calcRouteHeading = (target, origin) => {
 // ROVER LOOP
 
 const loop = ({ location, heading, clock }, { engines }) => {
-  const target = startTarget;
+  target = locationsOfInterest[n];
   const route = calcRouteHeading(target, location);
 
   // NAV INFOS
 
   console.table([
-    `Ziel Punkt: ${target.label}`,
+    `Ziel Punkt: ${n}; ${target.label}`,
     `Aktuelle Ausrichtung: ${Math.round(heading)}`,
     `Ziel Ausrichtung: ${Math.round(route.angle)}`,
     `Ziel Entfernung: ${Math.round(route.c * 1000000000) / 100}`,
@@ -64,10 +70,8 @@ const loop = ({ location, heading, clock }, { engines }) => {
 
   // KURS KORRIGIERUNG
 
-  if (
-    Math.round(heading) !== Math.round(calcRouteHeading(target, location).angle)
-  ) {
-    if (angleDiff(calcRouteHeading(target, location).angle, heading) >= 0) {
+  if (Math.round(heading) !== Math.round(route.angle)) {
+    if (angleDiff(route.angle, heading) >= 0) {
       return {
         engines: [-0.85, 0.85],
       };
@@ -78,9 +82,22 @@ const loop = ({ location, heading, clock }, { engines }) => {
   }
 
   // VOLLES ROHR
+  if (route.c * 10000000 > 400)
+    return {
+      engines: [0.7, 0.7],
+    };
+
+  // NEXT TARGET
+  if (route.c * 10000000 < 50) {
+    if (n < locationsOfInterest.length - 1) {
+      n += 1;
+    } else {
+      n = 0;
+    }
+  }
 
   return {
-    engines: [0.85, 0.85],
+    engines: [0.6, 0.6],
   };
 };
 
